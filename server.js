@@ -14,8 +14,35 @@ app.use((req, res, next) => {
   next();
 });
 
+// ============= CORS CONFIGURADO CORRECTAMENTE =============
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173', // Vite
+      'https://impertula.com'
+    ];
+    
+    // Permitir peticiones sin origin (herramientas de desarrollo como Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Para desarrollo, acepta todo. En producción, cambia esto
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600 // Cache preflight por 10 minutos
+};
+
+app.use(cors(corsOptions));
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
@@ -63,6 +90,7 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`API de Productos corriendo en puerto ${PORT}`);
+  console.log(`CORS habilitado para desarrollo`);
   console.log(`Rutas disponibles:`);
   console.log(`   GET    /api/products - Listar todos los productos`);
   console.log(`   GET    /api/products/:id - Obtener producto por ID`);
